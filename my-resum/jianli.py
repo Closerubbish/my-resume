@@ -4,7 +4,7 @@ import os
 st.set_page_config(page_title="刘清泉的简历", layout="centered")
 
 # ========== 照片设置 ==========
-PHOTO_PATH = "photo.jpg"   # 把你的照片放在同目录，改名与此一致即可
+PHOTO_PATH = "photo.jpg"  # 把你的照片放在同目录，改名与此一致即可
 
 # ========== 轻量自定义样式 ==========
 st.markdown("""

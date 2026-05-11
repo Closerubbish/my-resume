@@ -4,14 +4,14 @@ import os
 st.set_page_config(page_title="刘清泉的简历", layout="centered")
 
 # ========== 照片设置 ==========
-PHOTO_PATH = "photo.jpg"  # 把你的照片放在同目录，改名与此一致即可
+PHOTO_PATH = "my-resum/photo.jpg"  # 把你的照片放在同目录，改名与此一致即可
 
 # ========== 轻量自定义样式 ==========
 st.markdown("""
 <style>
     .resume-header {
         font-size: 2.2rem;
-        font-weight: 600;
+        font-weight: 600;e
         margin-bottom: 0.2rem;
     }
     .resume-subheader {

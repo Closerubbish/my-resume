@@ -2,324 +2,397 @@ import streamlit as st
 import os
 import base64
 
-st.set_page_config(page_title="刘清泉的简历", layout="wide", page_icon="🎮")
+st.set_page_config(page_title="刘清泉的简历", layout="wide")
 
 # ========== 照片路径 ==========
-PHOTO_PATH = "my-resum/photo.jpg"
+PHOTO_PATH = "photo.jpg"
 
 # ========== 自定义样式 ==========
 st.markdown("""
 <style>
-    /* ===== 全局字体与变量 ===== */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+/* 全局基础设置 */
+html, body {
+    color-scheme: light only !important;
+    background-color: #fafbfc !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: 0.3px;
+}
 
-    :root {
-        --primary: #1a1a2e;
-        --accent: #e8b86d;
-        --accent2: #4a90d9;
-        --card-bg: #f8f9fb;
-        --border: #e0e3e8;
-        --text: #2c3e50;
-        --text-light: #5a6c7d;
-        --tag-ue: #1a3a5c;
-        --tag-unity: #2d2d2d;
-        --tag-python: #1e4a3a;
-        --tag-cpp: #3d1f5c;
-        --tag-art: #5c2d1a;
-        --golden: #c8963e;
-        --highlight-bg: #fffdf5;
-    }
+/* 平滑滚动 + 锚点偏移 */
+html {
+    scroll-behavior: smooth !important;
+    scroll-padding-top: 60px !important;
+}
 
-    /* ===== 页面背景 ===== */
-    .stApp {
-        background: linear-gradient(180deg, #fafbfc 0%, #f0f2f5 100%);
-    }
+/* 隐藏原生控件：顶部栏、右上角菜单、部署按钮 */
+[data-testid="stHeader"], 
+[data-testid="stToolbar"],
+.stDeployButton, .stSidebarCollapseButton {
+    display: none !important;
+}
 
-    .main .block-container {
-        padding-top: 2rem;
-        padding-bottom: 3rem;
-        max-width: 1200px;
-    }
+:root, [data-theme="dark"], [data-theme="light"] {
+    color-scheme: light !important;
+    --background-color: #fafbfc !important;
+    --text-color: #2c3e50 !important;
+}
 
-    /* ===== 左侧整体容器（sticky） ===== */
-    .left-col {
-        position: sticky;
-        top: 2rem;
-        height: fit-content;
-    }
+/* 加载动画 */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.stApp {
+    animation: fadeIn 0.6s ease-out;
+    background: linear-gradient(180deg, #fafbfc 0%, #f0f2f5 100%);
+}
 
-    /* ===== 左侧横幅 ===== */
-    .hero-banner-left {
-        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #1a1a2e 100%);
-        border-radius: 16px;
-        padding: 1.5rem 1.2rem;
-        margin-bottom: 1.2rem;
-        text-align: center;
-        box-shadow: 0 8px 32px rgba(26, 26, 46, 0.25);
-        position: relative;
-        overflow: hidden;
-    }
-    .hero-banner-left::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        left: -50%;
-        width: 200%;
-        height: 200%;
-        background: radial-gradient(circle at 30% 50%, rgba(232,184,109,0.08) 0%, transparent 60%),
-                    radial-gradient(circle at 70% 30%, rgba(74,144,217,0.06) 0%, transparent 50%);
-        pointer-events: none;
-    }
+/* 全局间距标准化 */
+.block-container {
+    padding: 2rem 1.5rem 3rem 1.5rem !important;
+    max-width: 1200px;
+}
+
+/* 板块分割装饰线 */
+.section-divider {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #c8cdd8, transparent);
+    margin: 2rem 0;
+}
+
+/* ===== 全局字体与变量 ===== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+    --primary: #1a1a2e;
+    --accent: #e8b86d;
+    --accent2: #4a90d9;
+    --card-bg: #f8f9fb;
+    --border: #e0e3e8;
+    --text: #2c3e50;
+    --text-light: #5a6c7d;
+    --tag-ue: #1a3a5c;
+    --tag-unity: #2d2d2d;
+    --tag-python: #1e4a3a;
+    --tag-cpp: #3d1f5c;
+    --tag-art: #5c2d1a;
+    --golden: #c8963e;
+    --highlight-bg: #fffdf5;
+    --section-gap: 2rem;
+    --card-gap: 1.2rem;
+}
+
+/* ===== 左侧整体容器（sticky） ===== */
+.left-col {
+    position: sticky;
+    top: 2rem;
+    height: fit-content;
+}
+
+/* ===== 左侧横幅 ===== */
+.hero-banner-left {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #1a1a2e 100%);
+    border-radius: 16px;
+    padding: 1.5rem 1.2rem;
+    margin-bottom: var(--card-gap);
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(26, 26, 46, 0.25);
+    position: relative;
+    overflow: hidden;
+}
+.hero-banner-left::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 30% 50%, rgba(232,184,109,0.08) 0%, transparent 60%),
+                radial-gradient(circle at 70% 30%, rgba(74,144,217,0.06) 0%, transparent 50%);
+    pointer-events: none;
+}
+.hero-name-left {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: 2px;
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 1;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.hero-title-left {
+    display: inline-block;
+    background: rgba(232,184,109,0.15);
+    border: 1px solid rgba(232,184,109,0.35);
+    color: #e8b86d;
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 0.35rem 1rem;
+    border-radius: 30px;
+    letter-spacing: 0.5px;
+    position: relative;
+    z-index: 1;
+}
+
+/* ===== 左侧照片容器 ===== */
+.photo-container-left {
+    width: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    border: 3px solid #ffffff;
+    background: #e8eaef;
+    margin-bottom: var(--card-gap);
+    text-align: center;
+    transition: transform 0.25s ease;
+}
+.photo-container-left:hover {
+    transform: translateY(-3px);
+}
+.photo-container-left img {
+    width: 50% !important;
+    height: auto !important;
+    object-fit: contain !important;
+    margin: 0 auto !important;
+    display: block !important;
+    border-radius: 8px;
+}
+
+/* ===== 左侧导航栏 ===== */
+.nav-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    border: 1px solid #e8eaef;
+}
+.nav-card a {
+    display: block;
+    padding: 0.5rem 0.8rem;
+    margin: 0.2rem 0;
+    border-radius: 8px;
+    color: #2c3e50;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: background 0.15s;
+}
+.nav-card a:hover {
+    background: #f0f4f8;
+    color: #1a1a2e;
+}
+
+/* ===== 分区标题 ===== */
+.section-title-custom {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin: 0 0 1rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 3px solid transparent;
+    border-image: linear-gradient(90deg, #e8b86d 0%, #4a90d9 100%) 1;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.section-title-custom .icon {
+    font-size: 1.3rem;
+}
+
+/* ===== 卡片容器 ===== */
+.info-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 1.5rem 1.8rem;
+    margin-bottom: var(--card-gap);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    border: 1px solid #e8eaef;
+    transition: all 0.25s ease;
+}
+.info-card:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
+}
+
+.highlight-card {
+    background: #fffef9;
+    border-radius: 12px;
+    padding: 1.5rem 1.8rem;
+    margin-bottom: var(--card-gap);
+    box-shadow: 0 2px 12px rgba(200,150,62,0.08);
+    border: 1px solid #f0e4c8;
+    border-left: 4px solid #c8963e;
+    line-height: 1.7;
+    letter-spacing: 0.4px;
+}
+
+.portfolio-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 0.8rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    border: 1px solid #e0e3e8;
+    border-left: 4px solid #4a90d9;
+    transition: all 0.25s ease;
+    line-height: 1.65;
+    letter-spacing: 0.3px;
+}
+.portfolio-card:hover {
+    border-left-color: #e8b86d;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
+}
+.portfolio-card .p-title {
+    font-weight: 600;
+    color: #1a1a2e;
+    font-size: 1rem;
+}
+.portfolio-card .p-desc {
+    color: #5a6c7d;
+    font-size: 0.9rem;
+    margin-top: 0.3rem;
+}
+
+/* ===== 技能标签云 ===== */
+.skill-tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0.8rem 0;
+}
+.skill-tag {
+    display: inline-block;
+    padding: 0.4rem 0.9rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    transition: transform 0.15s, box-shadow 0.15s;
+    cursor: default;
+}
+.skill-tag:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.tag-ue { background: #1a3a5c; color: #e8f4ff; }
+.tag-unity { background: #2d2d2d; color: #e0e0e0; }
+.tag-python { background: #1e4a3a; color: #d4f5e8; }
+.tag-cpp { background: #3d1f5c; color: #f0e0ff; }
+.tag-art { background: #5c2d1a; color: #ffe8d8; }
+.tag-general { background: #3a4a5c; color: #e8f0f8; }
+.tag-core {
+    background: linear-gradient(135deg, #c8963e, #e8b86d);
+    color: #1a1a2e;
+    font-weight: 700;
+    font-size: 0.9rem;
+    padding: 0.5rem 1.1rem;
+    box-shadow: 0 3px 10px rgba(200,150,62,0.3);
+}
+
+/* 静态信息展示 */
+.static-info-row {
+    background: #fafbfc;
+    border-radius: 8px;
+    padding: 0.5rem 0;
+    margin-bottom: 0.25rem;
+    font-size: 0.95rem;
+    color: #2c3e50;
+}
+.static-info-label {
+    font-weight: 600;
+    color: #1a1a2e;
+    margin-right: 0.5rem;
+}
+
+/* 概要信息条 */
+.info-summary-bar {
+    background: #f0f4f8;
+    border-radius: 8px;
+    padding: 0.7rem 1.2rem;
+    font-size: 0.85rem;
+    color: #4a5568;
+    text-align: center;
+    margin: 1rem 0 var(--section-gap) 0;
+    letter-spacing: 0.3px;
+}
+.info-summary-bar strong {
+    color: #1a1a2e;
+}
+
+/* 实践经历卡片 */
+.exp-project-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 1.5rem 1.8rem;
+    margin-bottom: var(--card-gap);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    border-left: 4px solid #4a90d9;
+    transition: all 0.25s ease;
+    line-height: 1.75;
+    letter-spacing: 0.4px;
+}
+.exp-project-card:hover {
+    border-left-color: #e8b86d;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
+}
+.exp-project-card .exp-title {
+    font-weight: 600;
+    color: #1a1a2e;
+    font-size: 1.05rem;
+    margin-bottom: 0.3rem;
+}
+.exp-project-card .exp-meta {
+    font-size: 0.85rem;
+    color: #5a6c7d;
+    margin-bottom: 0.8rem;
+}
+.exp-project-card .exp-desc {
+    font-size: 0.9rem;
+    color: #2c3e50;
+    line-height: 1.75;
+    letter-spacing: 0.4px;
+}
+
+/* 自我评价文本优化行高字间距 */
+.eval-text {
+    line-height: 1.9 !important;
+    letter-spacing: 0.4px !important;
+    color: #2c3e50;
+}
+
+/* 作品集静态链接卡片 */
+.portfolio-link-card {
+    text-align:center;
+    padding:1rem;
+    margin-top:1rem;
+    background:#f8f9fb;
+    border-radius:10px;
+    border:1px solid #e8eaef;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
     .hero-name-left {
-        font-size: 1.8rem;
-        font-weight: 800;
-        color: #ffffff;
-        letter-spacing: 2px;
-        margin-bottom: 0.5rem;
-        position: relative;
-        z-index: 1;
+        font-size: 1.4rem;
     }
     .hero-title-left {
-        display: inline-block;
-        background: rgba(232,184,109,0.15);
-        border: 1px solid rgba(232,184,109,0.35);
-        color: #e8b86d;
-        font-size: 0.8rem;
-        font-weight: 500;
-        padding: 0.35rem 1rem;
-        border-radius: 30px;
-        letter-spacing: 0.5px;
-        position: relative;
-        z-index: 1;
+        font-size: 0.7rem;
     }
-
-    /* ===== 左侧照片容器（尺寸调整：图片缩小为原本一半） ===== */
-    .photo-container-left {
-        width: 100%;
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-        border: 3px solid #ffffff;
-        background: #e8eaef;
-        margin-bottom: 1.2rem;
-        text-align: center; /* 使内部图片居中 */
+    .main .block-container {
+        padding-top: 1rem;
     }
-    /* 关键修改：图片宽度为容器的一半，保持比例，完整显示无裁剪 */
+    .left-col {
+        position: static;
+    }
     .photo-container-left img {
-        width: 50% !important;
-        height: auto !important;
-        object-fit: contain !important;
-        margin: 0 auto !important;
-        display: block !important;
-        border-radius: 8px;    /* 轻微圆角，美观 */
+        width: 70% !important;
     }
-
-    /* ===== 左侧导航栏 ===== */
-    .nav-card {
-        background: #ffffff;
-        border-radius: 12px;
-        padding: 1rem 1.2rem;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-        border: 1px solid #e8eaef;
-    }
-    .nav-card a {
-        display: block;
-        padding: 0.5rem 0.8rem;
-        margin: 0.2rem 0;
-        border-radius: 8px;
-        color: #2c3e50;
-        text-decoration: none;
-        font-weight: 500;
-        font-size: 0.9rem;
-        transition: background 0.15s;
-    }
-    .nav-card a:hover {
-        background: #f0f4f8;
-        color: #1a1a2e;
-    }
-
-    /* ===== 分区标题（右侧主体） ===== */
-    .section-title-custom {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: #1a1a2e;
-        margin-top: 2rem;
-        margin-bottom: 1rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 3px solid transparent;
-        border-image: linear-gradient(90deg, #e8b86d 0%, #4a90d9 100%) 1;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    .section-title-custom .icon {
-        font-size: 1.3rem;
-    }
-
-    /* ===== 卡片容器 ===== */
-    .info-card {
-        background: #ffffff;
-        border-radius: 12px;
-        padding: 1.5rem 1.8rem;
-        margin-bottom: 1rem;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-        border: 1px solid #e8eaef;
-        transition: box-shadow 0.2s;
-    }
-    .info-card:hover {
-        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    }
-
-    .highlight-card {
-        background: #fffef9;
-        border-radius: 12px;
-        padding: 1.5rem 1.8rem;
-        margin-bottom: 1rem;
-        box-shadow: 0 2px 12px rgba(200,150,62,0.08);
-        border: 1px solid #f0e4c8;
-        border-left: 4px solid #c8963e;
-    }
-
-    .portfolio-card {
-        background: #ffffff;
-        border-radius: 12px;
-        padding: 1.5rem 1.8rem;
-        margin-bottom: 0.8rem;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-        border: 1px solid #e0e3e8;
-        border-left: 4px solid #4a90d9;
-        transition: all 0.2s;
-    }
-    .portfolio-card:hover {
-        border-left-color: #e8b86d;
-        box-shadow: 0 4px 18px rgba(0,0,0,0.08);
-    }
-    .portfolio-card .p-title {
-        font-weight: 600;
-        color: #1a1a2e;
-        font-size: 1rem;
-    }
-    .portfolio-card .p-desc {
-        color: #5a6c7d;
-        font-size: 0.9rem;
-        margin-top: 0.3rem;
-    }
-
-    /* ===== 技能标签云 ===== */
-    .skill-tags-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        margin: 0.8rem 0;
-    }
-    .skill-tag {
-        display: inline-block;
-        padding: 0.4rem 0.9rem;
-        border-radius: 20px;
-        font-size: 0.85rem;
-        font-weight: 500;
-        letter-spacing: 0.3px;
-        transition: transform 0.15s, box-shadow 0.15s;
-        cursor: default;
-    }
-    .skill-tag:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-    .tag-ue { background: #1a3a5c; color: #e8f4ff; }
-    .tag-unity { background: #2d2d2d; color: #e0e0e0; }
-    .tag-python { background: #1e4a3a; color: #d4f5e8; }
-    .tag-cpp { background: #3d1f5c; color: #f0e0ff; }
-    .tag-art { background: #5c2d1a; color: #ffe8d8; }
-    .tag-general { background: #3a4a5c; color: #e8f0f8; }
-    .tag-core {
-        background: linear-gradient(135deg, #c8963e, #e8b86d);
-        color: #1a1a2e;
-        font-weight: 700;
-        font-size: 0.9rem;
-        padding: 0.5rem 1.1rem;
-        box-shadow: 0 3px 10px rgba(200,150,62,0.3);
-    }
-
-    /* 静态信息展示（替换输入框后的样式） */
-    .static-info-row {
-        background: #fafbfc;
-        border-radius: 8px;
-        padding: 0.5rem 0;
-        margin-bottom: 0.25rem;
-        font-size: 0.95rem;
-        color: #2c3e50;
-    }
-    .static-info-label {
-        font-weight: 600;
-        color: #1a1a2e;
-        margin-right: 0.5rem;
-    }
-
-    /* ===== 概要信息条 ===== */
-    .info-summary-bar {
-        background: #f0f4f8;
-        border-radius: 8px;
-        padding: 0.7rem 1.2rem;
-        font-size: 0.85rem;
-        color: #4a5568;
-        text-align: center;
-        margin-top: 0.8rem;
-        letter-spacing: 0.3px;
-    }
-    .info-summary-bar strong {
-        color: #1a1a2e;
-    }
-
-    /* ===== 实践经历卡片 ===== */
-    .exp-project-card {
-        background: #ffffff;
-        border-radius: 12px;
-        padding: 1.5rem 1.8rem;
-        margin-bottom: 1rem;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-        border-left: 4px solid #4a90d9;
-        transition: all 0.2s;
-    }
-    .exp-project-card:hover {
-        border-left-color: #e8b86d;
-        box-shadow: 0 4px 18px rgba(0,0,0,0.08);
-    }
-    .exp-project-card .exp-title {
-        font-weight: 600;
-        color: #1a1a2e;
-        font-size: 1.05rem;
-        margin-bottom: 0.3rem;
-    }
-    .exp-project-card .exp-meta {
-        font-size: 0.85rem;
-        color: #5a6c7d;
-        margin-bottom: 0.8rem;
-    }
-    .exp-project-card .exp-desc {
-        font-size: 0.9rem;
-        color: #2c3e50;
-        line-height: 1.6;
-    }
-
-    /* ===== 响应式调整 ===== */
-    @media (max-width: 768px) {
-        .hero-name-left {
-            font-size: 1.4rem;
-        }
-        .hero-title-left {
-            font-size: 0.7rem;
-        }
-        .main .block-container {
-            padding-top: 1rem;
-        }
-        .left-col {
-            position: static;
-        }
-        .photo-container-left img {
-            width: 70% !important;  /* 移动端稍微调大一点依然保留缩小效果 */
-        }
-    }
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -328,7 +401,7 @@ st.markdown("""
 # ============================================================
 left_col, right_col = st.columns([1.2, 2.8], gap="large")
 
-# ==================== 左侧区域（sticky容器） ====================
+# ==================== 左侧区域 ====================
 with left_col:
     st.markdown('<div class="left-col">', unsafe_allow_html=True)
 
@@ -340,7 +413,7 @@ with left_col:
     </div>
     """, unsafe_allow_html=True)
 
-    # 照片（已通过CSS缩小为原尺寸一半）
+    # 照片
     if os.path.exists(PHOTO_PATH):
         with open(PHOTO_PATH, "rb") as img_file:
             img_bytes = img_file.read()
@@ -351,13 +424,13 @@ with left_col:
         </div>
         ''', unsafe_allow_html=True)
     else:
-        # 无照片时占位提示
-        st.markdown('<div class="photo-container-left" style="padding:1rem; text-align:center; color:#7f8c8d;">📷<br>暂无照片<br><small>请放置 my-resum/photo.jpg</small></div>',
+        st.markdown('<div class="photo-container-left" style="padding:1rem; text-align:center; color:#7f8c8d;">📷<br>暂无照片<br><small>请放置 photo.jpg</small></div>',
                     unsafe_allow_html=True)
 
     # 导航栏
     st.markdown("""
     <div class="nav-card">
+        <a style="font-size: 1.4rem; font-weight: bold;">简历导航栏(点击跳转)</a>
         <a href="#basic-info">📋 基本信息</a>
         <a href="#intent">🎯 求职意向</a>
         <a href="#skills">🛠 专业技能</a>
@@ -370,13 +443,12 @@ with left_col:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-# ==================== 右侧主体内容（基本信息已硬编码，无输入框） ====================
+# ==================== 右侧主体内容 ====================
 with right_col:
-    # 基本信息（完全静态，无输入框）
+    # 基本信息
     st.markdown('<div id="basic-info"></div>', unsafe_allow_html=True)
     st.markdown('<div class="section-title-custom"><span class="icon">📋</span> 基本信息</div>', unsafe_allow_html=True)
 
-    # 使用双列静态展示信息，替代原先的st.text_input
     col_a, col_b = st.columns(2)
     with col_a:
         st.markdown('<div class="static-info-row"><span class="static-info-label">姓名：</span>刘清泉</div>', unsafe_allow_html=True)
@@ -387,12 +459,14 @@ with right_col:
         st.markdown('<div class="static-info-row"><span class="static-info-label">邮箱：</span>3341964836@qq.com</div>', unsafe_allow_html=True)
         st.markdown('<div class="static-info-row"><span class="static-info-label">学历：</span>本科 · 数字媒体技术</div>', unsafe_allow_html=True)
 
-    # 概要信息条（完全硬编码，与上方静态信息保持一致）
     st.markdown("""
     <div class="info-summary-bar">
         <strong>刘清泉</strong> ｜ 📞 13550768834 ｜ ✉️ 3341964836@qq.com ｜ 📍 宜宾 ｜ 🎓 本科 · 数字媒体技术 ｜ 🎯 <strong>UE蓝图开发工程师 / 技术美术</strong>
     </div>
     """, unsafe_allow_html=True)
+
+    # 分割线
+    st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
 
     # 求职意向
     st.markdown('<div id="intent"></div>', unsafe_allow_html=True)
@@ -404,6 +478,8 @@ with right_col:
         <p style="margin-top:0.8rem; color:#2c3e50;">聚焦游戏研发环节，擅长通过技术与美术结合，优化游戏交互体验、实现蓝图逻辑与脚本开发，助力游戏项目落地。</p>
     </div>
     """, unsafe_allow_html=True)
+
+    st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
 
     # 专业技能
     st.markdown('<div id="skills"></div>', unsafe_allow_html=True)
@@ -476,6 +552,8 @@ C++ - 游戏逻辑开发、引擎接口调用
     </div>
     """, unsafe_allow_html=True)
 
+    st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
+
     # 作品集展示
     st.markdown('<div id="portfolio"></div>', unsafe_allow_html=True)
     st.markdown(
@@ -500,25 +578,26 @@ C++ - 游戏逻辑开发、引擎接口调用
 
     st.markdown(portfolio_cards_html, unsafe_allow_html=True)
 
-    # 作品集链接（保留交互，不影响需求）
-    portfolio_link = st.text_input("作品集链接（在线地址）", value="", key="portfolio_link",
-                                   placeholder="如：站酷 / GitHub / 个人网站链接")
-    if portfolio_link:
-        st.markdown(f"""
-        <div class="info-card" style="text-align:center;margin-top:0.5rem;">
-            🔗 <strong>在线作品集：</strong><a href="{portfolio_link}" target="_blank" style="color:#4a90d9;">{portfolio_link}</a>
-        </div>
-        """, unsafe_allow_html=True)
+    # 已改为静态展示，移除输入框
+    st.markdown("""
+    <div class="portfolio-link-card">
+        🔗 作品集可提供：站酷 / GitHub / 个人演示视频链接，面试可现场展示项目源码与演示效果
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
 
     # 荣誉奖项
     st.markdown('<div id="awards"></div>', unsafe_allow_html=True)
     st.markdown('<div class="section-title-custom"><span class="icon">🏆</span> 荣誉奖项</div>', unsafe_allow_html=True)
     st.markdown("""
     <div class="highlight-card">
-        <div style="padding:0.5rem 0; font-weight:500; color:#2c3e50;">🏅 蓝桥杯全国软件和信息技术专业人才大赛 二等奖（Python/C++方向）</div>
+        <div style="padding:0.5rem 0; font-weight:500; color:#2c3e50;">🏅 蓝桥杯全国软件和信息技术专业人才大赛 二等奖（C++方向）</div>
         <div style="padding:0.5rem 0; font-weight:500; color:#2c3e50;">📜 英语 CET-4</div>
     </div>
     """, unsafe_allow_html=True)
+
+    st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
 
     # 实践经历
     st.markdown('<div id="experience"></div>', unsafe_allow_html=True)
@@ -548,6 +627,8 @@ C++ - 游戏逻辑开发、引擎接口调用
         </div>
         """, unsafe_allow_html=True)
 
+    st.markdown('<div class="section-divider"></div>', unsafe_allow_html=True)
+
     # 自我评价
     st.markdown('<div id="self-eval"></div>', unsafe_allow_html=True)
     st.markdown('<div class="section-title-custom"><span class="icon">💡</span> 自我评价</div>', unsafe_allow_html=True)
@@ -563,14 +644,13 @@ C++ - 游戏逻辑开发、引擎接口调用
 
     st.markdown(f"""
     <div class="info-card">
-        <p style="color:#2c3e50; line-height:1.8;">{self_eval_text}</p>
+        <p class="eval-text">{self_eval_text}</p>
     </div>
     """, unsafe_allow_html=True)
 
     # 页脚
     st.markdown("""
-    <div class="divider-custom"></div>
-    <div style="text-align:center;color:#aab4c0;font-size:0.8rem;padding:1rem 0;">
+    <div style="text-align:center;color:#aab4c0;font-size:0.8rem;padding:1rem 0;margin-top:2rem;">
         📄 刘清泉的个人简历 · 感谢您花时间阅读 · 期待与您交流
     </div>
     """, unsafe_allow_html=True)

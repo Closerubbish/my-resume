@@ -38,7 +38,7 @@ st.markdown("""
     .main .block-container {
         padding-top: 2rem;
         padding-bottom: 3rem;
-        max-width: 1200px; /* 适度放宽，配合宽屏模式 */
+        max-width: 1200px;
     }
 
     /* ===== 左侧整体容器（sticky） ===== */
@@ -48,7 +48,7 @@ st.markdown("""
         height: fit-content;
     }
 
-    /* ===== 左侧横幅（缩小版） ===== */
+    /* ===== 左侧横幅 ===== */
     .hero-banner-left {
         background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #1a1a2e 100%);
         border-radius: 16px;
@@ -93,7 +93,7 @@ st.markdown("""
         z-index: 1;
     }
 
-    /* ===== 左侧照片（变大） ===== */
+    /* ===== 左侧照片容器（尺寸调整：图片缩小为原本一半） ===== */
     .photo-container-left {
         width: 100%;
         border-radius: 12px;
@@ -102,11 +102,16 @@ st.markdown("""
         border: 3px solid #ffffff;
         background: #e8eaef;
         margin-bottom: 1.2rem;
+        text-align: center; /* 使内部图片居中 */
     }
+    /* 关键修改：图片宽度为容器的一半，保持比例，完整显示无裁剪 */
     .photo-container-left img {
-        width: 100%;
-        display: block;
-        object-fit: cover;
+        width: 50% !important;
+        height: auto !important;
+        object-fit: contain !important;
+        margin: 0 auto !important;
+        display: block !important;
+        border-radius: 8px;    /* 轻微圆角，美观 */
     }
 
     /* ===== 左侧导航栏 ===== */
@@ -236,34 +241,19 @@ st.markdown("""
         box-shadow: 0 3px 10px rgba(200,150,62,0.3);
     }
 
-    /* ===== 输入框美化 ===== */
-    .stTextInput > div > div > input,
-    .stTextArea > div > div > textarea {
-        border-radius: 8px !important;
-        border: 1px solid #dde0e5 !important;
-        background: #fafbfc !important;
-        transition: all 0.2s !important;
-        font-size: 0.95rem !important;
-        color: #2c3e50 !important;
+    /* 静态信息展示（替换输入框后的样式） */
+    .static-info-row {
+        background: #fafbfc;
+        border-radius: 8px;
+        padding: 0.5rem 0;
+        margin-bottom: 0.25rem;
+        font-size: 0.95rem;
+        color: #2c3e50;
     }
-    .stTextInput > div > div > input:focus,
-    .stTextArea > div > div > textarea:focus {
-        border-color: #4a90d9 !important;
-        box-shadow: 0 0 0 3px rgba(74,144,217,0.1) !important;
-        background: #ffffff !important;
-    }
-    .stTextInput > label, .stTextArea > label {
-        font-weight: 500 !important;
-        color: #4a5568 !important;
-        font-size: 0.85rem !important;
-    }
-
-    /* ===== 分割线 ===== */
-    .divider-custom {
-        height: 1px;
-        background: linear-gradient(90deg, transparent, #c8cdd5, transparent);
-        margin: 1.5rem 0;
-        border: none;
+    .static-info-label {
+        font-weight: 600;
+        color: #1a1a2e;
+        margin-right: 0.5rem;
     }
 
     /* ===== 概要信息条 ===== */
@@ -324,14 +314,17 @@ st.markdown("""
             padding-top: 1rem;
         }
         .left-col {
-            position: static; /* 小屏幕取消吸顶 */
+            position: static;
+        }
+        .photo-container-left img {
+            width: 70% !important;  /* 移动端稍微调大一点依然保留缩小效果 */
         }
     }
 </style>
 """, unsafe_allow_html=True)
 
 # ============================================================
-# ========== 左右分栏布局（左侧更宽） ==========
+# ========== 左右分栏布局 ==========
 # ============================================================
 left_col, right_col = st.columns([1.2, 2.8], gap="large")
 
@@ -339,7 +332,7 @@ left_col, right_col = st.columns([1.2, 2.8], gap="large")
 with left_col:
     st.markdown('<div class="left-col">', unsafe_allow_html=True)
 
-    # 顶部横幅（缩小版）
+    # 顶部横幅
     st.markdown("""
     <div class="hero-banner-left">
         <div class="hero-name-left">刘 清 泉</div>
@@ -347,18 +340,19 @@ with left_col:
     </div>
     """, unsafe_allow_html=True)
 
-    # 照片（变大，占满宽度）
+    # 照片（已通过CSS缩小为原尺寸一半）
     if os.path.exists(PHOTO_PATH):
         with open(PHOTO_PATH, "rb") as img_file:
             img_bytes = img_file.read()
         img_b64 = base64.b64encode(img_bytes).decode()
         st.markdown(f'''
         <div class="photo-container-left">
-            <img src="data:image/jpeg;base64,{img_b64}" alt="照片">
+            <img src="data:image/jpeg;base64,{img_b64}" alt="刘清泉照片">
         </div>
         ''', unsafe_allow_html=True)
     else:
-        st.markdown('<div class="photo-placeholder-custom">📷<br>请上传照片<br><small>my-resum/photo.jpg</small></div>',
+        # 无照片时占位提示
+        st.markdown('<div class="photo-container-left" style="padding:1rem; text-align:center; color:#7f8c8d;">📷<br>暂无照片<br><small>请放置 my-resum/photo.jpg</small></div>',
                     unsafe_allow_html=True)
 
     # 导航栏
@@ -376,25 +370,27 @@ with left_col:
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-# ==================== 右侧主体内容 ====================
+# ==================== 右侧主体内容（基本信息已硬编码，无输入框） ====================
 with right_col:
-    # 基本信息（含输入框）
+    # 基本信息（完全静态，无输入框）
     st.markdown('<div id="basic-info"></div>', unsafe_allow_html=True)
     st.markdown('<div class="section-title-custom"><span class="icon">📋</span> 基本信息</div>', unsafe_allow_html=True)
 
+    # 使用双列静态展示信息，替代原先的st.text_input
     col_a, col_b = st.columns(2)
     with col_a:
-        name_val = st.text_input("姓名", value="刘清泉", key="name")
-        phone_val = st.text_input("电话", value="13550768834", key="phone")
-        location_val = st.text_input("现居城市", value="宜宾", key="location")
+        st.markdown('<div class="static-info-row"><span class="static-info-label">姓名：</span>刘清泉</div>', unsafe_allow_html=True)
+        st.markdown('<div class="static-info-row"><span class="static-info-label">电话：</span>13550768834</div>', unsafe_allow_html=True)
+        st.markdown('<div class="static-info-row"><span class="static-info-label">现居城市：</span>宜宾</div>', unsafe_allow_html=True)
     with col_b:
-        job_title_val = st.text_input("求职意向", value="UE蓝图开发工程师 / 技术美术", key="job_title")
-        email_val = st.text_input("邮箱", value="3341964836@qq.com", key="email")
-        degree_val = st.text_input("学历", value="本科 · 数字媒体技术", key="degree_summary")
+        st.markdown('<div class="static-info-row"><span class="static-info-label">求职意向：</span>UE蓝图开发工程师 / 技术美术</div>', unsafe_allow_html=True)
+        st.markdown('<div class="static-info-row"><span class="static-info-label">邮箱：</span>3341964836@qq.com</div>', unsafe_allow_html=True)
+        st.markdown('<div class="static-info-row"><span class="static-info-label">学历：</span>本科 · 数字媒体技术</div>', unsafe_allow_html=True)
 
-    st.markdown(f"""
+    # 概要信息条（完全硬编码，与上方静态信息保持一致）
+    st.markdown("""
     <div class="info-summary-bar">
-        <strong>{name_val}</strong> ｜ 📞 {phone_val} ｜ ✉️ {email_val} ｜ 📍 {location_val} ｜ 🎓 {degree_val} ｜ 🎯 <strong>{job_title_val}</strong>
+        <strong>刘清泉</strong> ｜ 📞 13550768834 ｜ ✉️ 3341964836@qq.com ｜ 📍 宜宾 ｜ 🎓 本科 · 数字媒体技术 ｜ 🎯 <strong>UE蓝图开发工程师 / 技术美术</strong>
     </div>
     """, unsafe_allow_html=True)
 
@@ -504,6 +500,7 @@ C++ - 游戏逻辑开发、引擎接口调用
 
     st.markdown(portfolio_cards_html, unsafe_allow_html=True)
 
+    # 作品集链接（保留交互，不影响需求）
     portfolio_link = st.text_input("作品集链接（在线地址）", value="", key="portfolio_link",
                                    placeholder="如：站酷 / GitHub / 个人网站链接")
     if portfolio_link:
